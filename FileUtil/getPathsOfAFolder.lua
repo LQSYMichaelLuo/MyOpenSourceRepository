@@ -1,4 +1,3 @@
---Warning: Please use this code under the framework of Androlua+ !!!
 --MIT License
 --Author: MichaelLuo
 
@@ -14,21 +13,25 @@ import("java.io.File")
 function getTheAbsolutePathsTableOfAllFilesUnderThePath(basicPath)
   local absolutePathsTable = {}
   local fileBasicPath = File(basicPath)
-  local tab = fileBasicPath.listFiles()
-  for i = 0, #tab - 1 do
-    local userdata = tab[i]
-    if userdata.isDirectory() then
-      local absolutePathsTable_child = getTheAbsolutePathsTableOfAllFilesUnderThePath(tostring(userdata))
-      for i = 1, #absolutePathsTable_child do
-        absolutePathsTable[#absolutePathsTable+1] = absolutePathsTable_child[i]
+  if fileBasicPath.isDirectory() then
+    local tab = fileBasicPath.listFiles()
+    for i = 0, #tab - 1 do
+      local userdata = tab[i]
+      if userdata.isDirectory() then
+        local absolutePathsTable_child = getTheAbsolutePathsTableOfAllFilesUnderThePath(tostring(userdata))
+        for i = 1, #absolutePathsTable_child do
+          absolutePathsTable[#absolutePathsTable+1] = absolutePathsTable_child[i]
+        end
+      else
+        absolutePathsTable[#absolutePathsTable+1] = tostring(userdata)
       end
-    else
-      absolutePathsTable[#absolutePathsTable+1] = tostring(userdata)
+      luajava.clear(userdata)
     end
-    luajava.clear(userdata)
+    luajava.clear(fileBasicPath)
+    return absolutePathsTable
+  else
+    return {basicPath}
   end
-  luajava.clear(fileBasicPath)
-  return absolutePathsTable
 end
 
 --获取某目录路径下所有文件的相对路径
@@ -37,16 +40,19 @@ end
 --@return:
 --relativePathsTable table 
 function getTheRelativePathsTableOfAllFilesUnderThePath(path)
-  local theLastCharacterOfPathString = path:sub(#path,#path)
-  if theLastCharacterOfPathString ~= "/" then
-    path = path .. "/"
+  local userdata = File(path)
+  local path = tostring(userdata) .. "/"
+  if userdata.isDirectory() then
+    luajava.clear(userdata)
+    local relativePathsTable = {}
+    local absolutePathsTable = getTheAbsolutePathsTableOfAllFilesUnderThePath(path)
+    for i = 1, #absolutePathsTable do
+      relativePathsTable[#relativePathsTable+1] = absolutePathsTable[i]:match(path.."(.+)")
+    end
+    return relativePathsTable
+  else
+    return {userdata.getName()}
   end
-  local relativePathsTable = {}
-  local absolutePathsTable = getTheAbsolutePathsTableOfAllFilesUnderThePath(path)
-  for i = 1, #absolutePathsTable do
-    relativePathsTable[#relativePathsTable+1] = absolutePathsTable[i]:match(path.."(.+)")
-  end
-  return relativePathsTable
 end
 
 --使用示例：
