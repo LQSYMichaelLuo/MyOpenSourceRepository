@@ -1,3 +1,4 @@
+--Warning: Please use this code under the framework of Androlua+ !!!
 --MIT License
 --Author: MichaelLuo
 
